@@ -184,3 +184,34 @@ type SpecificKnownNonBlockItemData struct {
 	// Unknown preserves additional NBT fields for this item.
 	Unknown map[string]any `json:"known_nbt,omitempty"`
 }
+
+// StackSlot identifies a slot by its window, Bedrock container ID, and slot number.
+type StackSlot struct {
+	// Window is zero for the player's inventory, or the ID of the open window.
+	Window uint32
+	// Container is the Bedrock container ID within the window.
+	Container byte
+	// Slot is the slot number within the container.
+	Slot byte
+}
+
+// StackMove describes one move in a MoveStacks request.
+type StackMove struct {
+	From, To StackSlot
+	Count    byte
+}
+
+// StackTransfer selects the operation performed by TransferStack.
+type StackTransfer byte
+
+const (
+	// MoveStack moves the requested number of items from the source slot to the destination.
+	MoveStack StackTransfer = iota
+	// SwapStacks exchanges two entire stacks; TransferStack ignores count in this mode.
+	SwapStacks
+	// DropStack drops items from the source; TransferStack ignores the destination in this mode.
+	DropStack
+)
+
+// GridInput describes how many items to move from an inventory slot into a zero-based crafting cell.
+type GridInput struct{ Bag, Cell, Count byte }

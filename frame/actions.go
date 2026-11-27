@@ -107,6 +107,23 @@ type BotActionFor[P, Settings, Inventory any] interface {
 	SetStructureBlockData(pos P, settings Settings)
 	// GetInventoryContent returns an item instance for windowID and slotID, if the host has that slot.
 	GetInventoryContent(windowID uint32, slotID uint8) (instance Inventory, found bool)
+	// WeaveBannerLayer adds a layer using the currently open loom. The banner and dye
+	// occupy single-item stacks. A negative templateSlot selects a pattern without a template.
+	WeaveBannerLayer(bannerSlot, dyeSlot byte, templateSlot int32, pattern string, color int32) error
+	// DecorateShield applies the banner in bannerSlot to the shield in shieldSlot.
+	DecorateShield(bannerSlot, shieldSlot byte) error
+	// TrimArmour applies a trim using the currently open smithing table.
+	TrimArmour(armourSlot, materialSlot, templateSlot byte, pattern, material string) error
+	// TakeOminousBanner puts an ominous banner from the creative inventory in an empty slot.
+	TakeOminousBanner(slot byte) error
+	// TakeCreativeItem takes count items from a server-advertised creative entry into an empty slot.
+	TakeCreativeItem(creativeID uint32, slot, count byte) error
+	// CraftGrid crafts a server-advertised recipe in the open crafting grid.
+	CraftGrid(recipe string, inputs []GridInput, resultSlot byte) error
+	// TransferStack moves count items, swaps two stacks, or drops items according to mode.
+	TransferStack(from, to StackSlot, count byte, mode StackTransfer) error
+	// MoveStacks applies the ordered moves in one item-stack request.
+	MoveStacks(moves []StackMove) error
 }
 
 // BotAction is the low-level action set specialized for SDK positions, structure settings and Bedrock item
@@ -142,8 +159,10 @@ type BotActionHighLevelFor[P, Sign, Block, Enchantments, Action, Slot, ItemT, Pr
 	// HighLevelListenItemPicked waits up to timeout for an inventory pickup action. The returned cancel
 	// function stops the wait and releases the bot for other work.
 	HighLevelListenItemPicked(timeout time.Duration) (actionChan chan Action, cancel func(), err error)
-	// HighLevelPickBlock picks the block at pos and places it in targetHotBar, retrying up to retryTimes.
+	// HighLevelPickBlock is equivalent to PickBlock with withNBT set to true.
 	HighLevelPickBlock(pos P, targetHotBar uint8, retryTimes int) error
+	// PickBlock picks the block at pos into targetHotBar, requesting block NBT only if withNBT is true.
+	PickBlock(pos P, targetHotBar uint8, withNBT bool, retryTimes int) error
 	// HighLevelBlockBreakAndPickInHotBar breaks the block at pos and optionally restores it, then places the
 	// drop in targetSlot.
 	HighLevelBlockBreakAndPickInHotBar(pos P, recoverBlock bool, targetSlot uint8, maxRetriesTotal int) (err error)
